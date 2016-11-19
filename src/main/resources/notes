@@ -1,0 +1,84 @@
+IP to Country database
+1. DB-IP
+下载地址：https://www.db-ip.com/db/
+文件名称：dbip-country-2015-07.csv.gz
+文件格式：ip_start,ip_end,countrycode
+更新频率：每月
+
+2.  Maxmind 
+下载地址及文档：
+http://dev.maxmind.com/geoip/geoip2/geolite2/
+http://dev.maxmind.com/geoip/geoipupdate/
+http://maxmind.github.io/MaxMind-DB/
+http://dev.maxmind.com/geoip/geoip2/geoip2-csv-databases/
+文件名称：GeoLite2-Country-CSV.zip
+文件格式：gnomeid, countrycode
+       network_mask,gnomeid 
+更新频率：每月
+
+3.  Software77
+下载地址：http://software77.net/geo-ip/history/
+文件名称：IpToCountry.1437806502.csv.gz
+文件格式：startlong,endlong,countrycode
+更新频率：每天
+
+4.  IPligence
+http://www.ipligence.com/free-ip-database?download_form
+ipligence-lite-free.zip
+startlong endlong countrycode
+91708
+
+5.  ip2nation
+http://www.ip2nation.com/ip2nation/Download
+ip2nation.zip
+
+查询算法参考Fast Range Search
+http://stackoverflow.com/questions/1193477/fast-algorithm-to-quickly-find-the-range-a-number-belongs-to-in-a-set-of-ranges
+https://en.wikipedia.org/wiki/Range_tree
+
+
+geolite2
+total: 3610295640, not matched:1446982
+relative accuracy: 0.9995992067840738
+
+dbipdb
+total: 4294967296, not matched:151518958
+relative accuracy: 0.9647217434830964
+
+software77
+total: 4208155800, not matched:65732096
+relative accuracy: 0.9843798330850773
+
+
+从覆盖率和相对准确率两个方面来对比三种ip库的优劣
+
+coverage
+dbipdb: 4294967296 / 4294967296 =  100%
+software77: 4208155800 / 4294967295 = 98%
+geolite2: 3610295640 / 4294967295 = 84%
+
+覆盖率是一个ip库所覆盖的ip个数除以总的ip个数
+可以看到dbipdb的覆盖率最高，software77其次，geolite2最低。仔细分析geolite2库的地址段并与另外两个地址库对比，发现geolite2缺少了0.0.0.0~0.255.255.255和224.0.0.0~255.255.255.255两个网段，这两个网段中的ip属于保留ip地址，不会出现在真实网络环境中。加入这两个网段的ip后，geolite2的覆盖率为97%。
+
+relative accuracy
+dbipdb: 0.9500625911168754
+software77: 0.9882682366465614
+geolite2: 0.9994277827455471
+
+相对准确率是遍历一个库的ip并查询另外两个库，若与其中任意一个匹配即为匹配，匹配占比即为相对准确率。
+geolite2相对准确率最高，software77其次，dbipdb最差。
+
+如果只考虑准确率，可以直接选用geolite2作为查询库；综合覆盖率和相对准确率两个指标，可以将software77与geolite2融合到dbipdb中，先融合software77，再融合geolite2。
+
+IP2Country工具使用
+源码SVN位置
+https://rta.lenovo.com/svn/beacon09/06 Service/Project/06 Code/LpsPushService2.0/ip2country
+在Maven项目的pom文件中添加如下依赖
+<dependency>
+	<groupId>com.lenovo.push.data.util</groupId>
+	<artifactId>ip2country</artifactId>
+	<version>0.2.0</version>
+</dependency>
+调用方法如下
+IP2CountryTool tool = new IP2CountryTool();
+System.out.println(tool.ip2Country("111.202.176.87"));
